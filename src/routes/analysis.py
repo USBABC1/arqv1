@@ -40,172 +40,6 @@ except Exception as e:
     logger.error(f"❌ Erro ao inicializar DeepSeek: {e}")
     deepseek_client = None
 
-# Cache para dados de mercado
-@lru_cache(maxsize=100)
-def get_market_data_cache(nicho: str, region: str = "BR") -> Dict:
-    """Cache para dados de mercado por nicho"""
-    return {}
-
-class MarketAnalyzer:
-    """Classe principal para análise de mercado avançada"""
-    
-    def __init__(self):
-        self.serp_api_key = os.getenv('SERP_API_KEY')
-        self.facebook_token = os.getenv('FACEBOOK_ACCESS_TOKEN')
-        
-    def get_keyword_data(self, keywords: List[str]) -> Dict:
-        """Obtém dados reais de palavras-chave"""
-        try:
-            keyword_data = {}
-            for keyword in keywords:
-                keyword_data[keyword] = {
-                    'volume': self._estimate_search_volume(keyword),
-                    'difficulty': self._estimate_keyword_difficulty(keyword),
-                    'cpc': self._estimate_cpc(keyword),
-                    'trend': self._get_trend_data(keyword)
-                }
-            return keyword_data
-        except Exception as e:
-            logger.error(f"Erro ao obter dados de keywords: {e}")
-            return {}
-    
-    def _estimate_search_volume(self, keyword: str) -> int:
-        """Estima volume de busca baseado em heurísticas"""
-        base_volume = len(keyword.split()) * 1000
-        return min(base_volume * 10, 50000)
-    
-    def _estimate_keyword_difficulty(self, keyword: str) -> str:
-        """Estima dificuldade da palavra-chave"""
-        if len(keyword.split()) <= 2:
-            return "Alta"
-        elif len(keyword.split()) <= 3:
-            return "Média"
-        return "Baixa"
-    
-    def _estimate_cpc(self, keyword: str) -> float:
-        """Estima CPC baseado no nicho"""
-        high_value_niches = ['finanças', 'investimento', 'marketing', 'saúde', 'educação']
-        if any(nicho in keyword.lower() for nicho in high_value_niches):
-            return round(2.50 + (len(keyword.split()) * 0.5), 2)
-        return round(1.20 + (len(keyword.split()) * 0.3), 2)
-    
-    def _get_trend_data(self, keyword: str) -> str:
-        """Obtém dados de tendência"""
-        return "Crescimento Estável"
-    
-    def analyze_competitors(self, nicho: str, competitors: str) -> List[Dict]:
-        """Análise avançada de concorrentes"""
-        competitor_list = [c.strip() for c in competitors.split(',') if c.strip()] if competitors else []
-        
-        analyzed_competitors = []
-        for competitor in competitor_list:
-            analysis = {
-                'nome': competitor,
-                'produto_servico': f"Produto/serviço em {nicho}",
-                'preco_estimado': self._estimate_competitor_price(nicho),
-                'forcas': self._analyze_competitor_strengths(competitor, nicho),
-                'fraquezas': self._analyze_competitor_weaknesses(competitor, nicho),
-                'market_share_estimado': self._estimate_market_share(competitor),
-                'estrategia_marketing': self._analyze_marketing_strategy(competitor),
-                'oportunidade_diferenciacao': self._find_differentiation_opportunity(competitor, nicho)
-            }
-            analyzed_competitors.append(analysis)
-        
-        if not analyzed_competitors:
-            analyzed_competitors = self._create_generic_competitor_analysis(nicho)
-        
-        return analyzed_competitors
-    
-    def _estimate_competitor_price(self, nicho: str) -> str:
-        """Estima preços de concorrentes baseado no nicho"""
-        price_ranges = {
-            'marketing digital': 'R$ 497-2.997',
-            'saúde': 'R$ 197-997',
-            'fitness': 'R$ 97-497',
-            'finanças': 'R$ 297-1.497',
-            'educação': 'R$ 197-897',
-            'desenvolvimento pessoal': 'R$ 297-1.997'
-        }
-        
-        for key, value in price_ranges.items():
-            if key in nicho.lower():
-                return value
-        return 'R$ 197-997'
-    
-    def _analyze_competitor_strengths(self, competitor: str, nicho: str) -> str:
-        """Analisa forças do concorrente"""
-        strengths = [
-            "Marca estabelecida no mercado",
-            "Base de clientes consolidada",
-            "Presença forte nas redes sociais",
-            "Conteúdo de qualidade",
-            "Preço competitivo"
-        ]
-        return "; ".join(strengths[:3])
-    
-    def _analyze_competitor_weaknesses(self, competitor: str, nicho: str) -> str:
-        """Analisa fraquezas do concorrente"""
-        weaknesses = [
-            "Atendimento ao cliente limitado",
-            "Produto genérico sem diferenciação",
-            "Marketing massificado",
-            "Falta de inovação",
-            "Preço elevado para o valor entregue"
-        ]
-        return "; ".join(weaknesses[:3])
-    
-    def _estimate_market_share(self, competitor: str) -> str:
-        """Estima participação de mercado"""
-        return "5-15% do nicho"
-    
-    def _analyze_marketing_strategy(self, competitor: str) -> str:
-        """Analisa estratégia de marketing"""
-        strategies = [
-            "Foco em Facebook Ads e Instagram",
-            "Marketing de conteúdo e SEO",
-            "Parcerias com influenciadores",
-            "E-mail marketing intensivo"
-        ]
-        return strategies[0]
-    
-    def _find_differentiation_opportunity(self, competitor: str, nicho: str) -> str:
-        """Identifica oportunidades de diferenciação"""
-        opportunities = [
-            "Personalização da experiência do cliente",
-            "Suporte mais humanizado e próximo",
-            "Metodologia exclusiva e comprovada",
-            "Garantia mais robusta",
-            "Bônus de maior valor percebido"
-        ]
-        return opportunities[0]
-    
-    def _create_generic_competitor_analysis(self, nicho: str) -> List[Dict]:
-        """Cria análise genérica quando não há concorrentes informados"""
-        return [
-            {
-                'nome': f"Líder do mercado em {nicho}",
-                'produto_servico': f"Curso/consultoria premium em {nicho}",
-                'preco_estimado': self._estimate_competitor_price(nicho),
-                'forcas': "Autoridade estabelecida; Grande base de clientes; Marketing bem estruturado",
-                'fraquezas': "Preço elevado; Atendimento massificado; Pouca inovação",
-                'market_share_estimado': "15-25% do nicho",
-                'estrategia_marketing': "Facebook Ads + E-mail marketing + Webinars",
-                'oportunidade_diferenciacao': "Atendimento personalizado e metodologia exclusiva"
-            },
-            {
-                'nome': f"Challenger em {nicho}",
-                'produto_servico': f"Produto digital intermediário em {nicho}",
-                'preco_estimado': "R$ 197-697",
-                'forcas': "Preço acessível; Marketing ágil; Inovação constante",
-                'fraquezas': "Menor autoridade; Recursos limitados; Suporte básico",
-                'market_share_estimado': "5-10% do nicho",
-                'estrategia_marketing': "Instagram + TikTok + Influenciadores micro",
-                'oportunidade_diferenciacao': "Superior qualidade de conteúdo e suporte premium"
-            }
-        ]
-
-analyzer = MarketAnalyzer()
-
 @analysis_bp.route('/analyze', methods=['POST'])
 def analyze_market():
     """Análise completa de mercado com DeepSeek e pesquisa na internet"""
@@ -241,8 +75,8 @@ def analyze_market():
         
         logger.info(f"🔍 Iniciando análise para nicho: {analysis_data['nicho']}")
         
-        # Save initial analysis record
-        analysis_id = save_initial_analysis(analysis_data)
+        # Save initial analysis record (sem campos problemáticos)
+        analysis_id = save_initial_analysis_safe(analysis_data)
         
         # Generate comprehensive analysis with DeepSeek
         if deepseek_client:
@@ -252,9 +86,9 @@ def analyze_market():
             logger.info("🔄 DeepSeek não disponível, usando análise de fallback")
             analysis_result = generate_fallback_analysis(analysis_data)
         
-        # Update analysis record with results
+        # Update analysis record with results (se disponível)
         if supabase and analysis_id:
-            update_analysis_record(analysis_id, analysis_result)
+            update_analysis_record_safe(analysis_id, analysis_result)
             analysis_result['analysis_id'] = analysis_id
         
         logger.info(f"✅ Análise concluída com sucesso para: {analysis_data['nicho']}")
@@ -268,13 +102,14 @@ def analyze_market():
             'fallback_available': True
         }), 500
 
-def save_initial_analysis(data: Dict) -> Optional[int]:
-    """Salva registro inicial da análise"""
+def save_initial_analysis_safe(data: Dict) -> Optional[int]:
+    """Salva registro inicial da análise apenas com campos que existem"""
     if not supabase:
         logger.warning("⚠️ Supabase não disponível para salvar análise")
         return None
     
     try:
+        # Usar apenas campos que sabemos que existem na tabela
         analysis_record = {
             'nicho': data['nicho'],
             'produto': data['produto'],
@@ -283,9 +118,6 @@ def save_initial_analysis(data: Dict) -> Optional[int]:
             'publico': data['publico'],
             'concorrentes': data['concorrentes'],
             'dados_adicionais': data['dados_adicionais'],
-            'objetivo_receita': data['objetivo_receita_float'],
-            'orcamento_marketing': data['orcamento_marketing_float'],
-            'prazo_lancamento': data['prazoLancamento'],
             'status': 'processing',
             'created_at': datetime.utcnow().isoformat()
         }
@@ -300,8 +132,8 @@ def save_initial_analysis(data: Dict) -> Optional[int]:
     
     return None
 
-def update_analysis_record(analysis_id: int, results: Dict):
-    """Atualiza registro da análise com resultados"""
+def update_analysis_record_safe(analysis_id: int, results: Dict):
+    """Atualiza registro da análise com resultados usando apenas campos existentes"""
     if not supabase:
         return
     
@@ -313,12 +145,20 @@ def update_analysis_record(analysis_id: int, results: Dict):
             'marketing_data': results.get('marketing', {}),
             'metrics_data': results.get('metricas', {}),
             'funnel_data': results.get('funnel', {}),
-            'market_intelligence': results.get('market_intelligence', {}),
-            'action_plan': results.get('plano_acao', {}),
-            'comprehensive_analysis': results,
             'status': 'completed',
             'updated_at': datetime.utcnow().isoformat()
         }
+        
+        # Tentar adicionar campos extras se existirem
+        try:
+            if 'market_intelligence' in results:
+                update_data['market_intelligence'] = results['market_intelligence']
+            if 'plano_acao' in results:
+                update_data['action_plan'] = results['plano_acao']
+            if results:
+                update_data['comprehensive_analysis'] = results
+        except:
+            pass  # Ignorar se os campos não existirem
         
         supabase.table('analyses').update(update_data).eq('id', analysis_id).execute()
         logger.info(f"💾 Análise {analysis_id} atualizada no Supabase")
@@ -625,10 +465,15 @@ def get_nichos():
 def get_system_status():
     """Retorna status detalhado do sistema de análise"""
     try:
+        # Verificar chave DeepSeek
+        deepseek_key = os.getenv('DEEPSEEK_API_KEY')
+        deepseek_valid = deepseek_key and deepseek_key.startswith('sk-') and len(deepseek_key) > 20
+        
         status = {
             'deepseek_ai': {
-                'available': deepseek_client is not None,
-                'model': 'DeepSeek R1 Distill Llama 70B' if deepseek_client else None,
+                'available': deepseek_client is not None and deepseek_valid,
+                'model': 'DeepSeek Chat' if deepseek_client else None,
+                'api_key_format': 'valid' if deepseek_valid else 'invalid',
                 'features': ['web_search', 'real_time_analysis', 'competitor_research'] if deepseek_client else []
             },
             'database': {
@@ -667,22 +512,25 @@ def test_connection():
         }
         
         # Teste DeepSeek
-        if deepseek_client:
+        deepseek_key = os.getenv('DEEPSEEK_API_KEY')
+        if deepseek_client and deepseek_key and deepseek_key.startswith('sk-'):
             try:
-                # Teste simples de conectividade
                 results['tests']['deepseek'] = {
                     'status': 'available',
-                    'message': 'DeepSeek AI client configurado e pronto'
+                    'message': 'DeepSeek AI client configurado e pronto',
+                    'api_key_valid': True
                 }
             except Exception as e:
                 results['tests']['deepseek'] = {
                     'status': 'error',
-                    'message': f'Erro no DeepSeek: {str(e)}'
+                    'message': f'Erro no DeepSeek: {str(e)}',
+                    'api_key_valid': False
                 }
         else:
             results['tests']['deepseek'] = {
                 'status': 'unavailable',
-                'message': 'DeepSeek AI não configurado'
+                'message': 'DeepSeek AI não configurado ou chave inválida',
+                'api_key_valid': False
             }
         
         # Teste Supabase
