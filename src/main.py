@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, send_from_directory, jsonify
+from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from database import db
@@ -235,20 +235,6 @@ def rate_limit_exceeded(error):
         'message': 'Muitas requisições. Tente novamente em alguns minutos.',
         'status_code': 429
     }), 429
-
-# Middleware para logging de requisições
-@app.before_request
-def log_request_info():
-    """Log informações da requisição"""
-    if not request.path.startswith('/static'):
-        logger.info(f"📥 {request.method} {request.path} - IP: {request.remote_addr}")
-
-@app.after_request
-def log_response_info(response):
-    """Log informações da resposta"""
-    if not request.path.startswith('/static'):
-        logger.info(f"📤 {request.method} {request.path} - Status: {response.status_code}")
-    return response
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
